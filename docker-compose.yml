@@ -1,0 +1,118 @@
+version: "3.8"
+services:
+  rabbitmq:
+    restart: unless-stopped
+    container_name: ${PROJECT_NAME}_RMQ
+    image: rabbitmq:3.9-management
+    hostname: rabbitmq
+    ports:
+      - ${RMQ_PORT}:${RMQ_PORT}
+      - ${RMQ_ADMIN_PORT}:${RMQ_ADMIN_PORT}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
+    networks:
+      - rabbitmq_net
+    env_file:
+          - .env 
+
+  mysqlDB:
+    restart: unless-stopped
+    container_name: ${PROJECT_NAME}_MYSQL
+    image: mysql:8
+    environment:
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    env_file:
+        - .env 
+
+  myadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
+    container_name: ${PROJECT_NAME}_MYSQL_ADMIN
+    environment:
+      PMA_HOST: mysqlDB
+      PMA_PORT: ${MYSQL_PORT}
+    ports:
+      - ${MYSQL_ADMIN_PORT}:80
+    depends_on:
+      - mysqlDB
+
+  gateway:
+    container_name: ${PROJECT_NAME}_GATEWAY
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile-gateway
+    working_dir: /gateway
+    ports:
+      - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    env_file:
+          - .env
+    volumes:
+        - node_modules_gateway:/gateway/node_modules
+        - ./back/api:/gateway
+    depends_on:
+      - mysqlDB
+      - rabbitmq
+    links:
+      - mysqlDB
+      - rabbitmq
+    networks:
+      - rabbitmq_net
+
+  ms-messages:
+    container_name: ${PROJECT_NAME}_MS_MESSAGES
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile-ms-messages
+    working_dir: /messages
+    ports:
+      - ${MESSAGES_PORT}:${MESSAGES_PORT}
+    env_file:
+          - .env
+    volumes:
+        - node_modules_ms_messages:/messages/node_modules
+        - ./back/api:/messages
+    depends_on:
+      - mysqlDB
+      - rabbitmq
+    links:
+      - mysqlDB
+      - rabbitmq
+    networks:
+      - rabbitmq_net
+
+  front:
+    container_name: ${PROJECT_NAME}_VUE
+    restart: unless-stopped
+    build:
+      context: ./
+      dockerfile: Dockerfile-front
+    working_dir: /frontend
+    ports:
+      - ${VUE_PORT}:3000
+    env_file:
+      - .env
+    volumes:
+      - node_modules_vue:/frontend/node_modules
+      - ./front:/frontend
+    networks:
+      - rabbitmq_net
+
+
+networks:
+  rabbitmq_net:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_log:
+  node_modules_gateway:
+  node_modules_ms_messages:
+  node_modules_vue:

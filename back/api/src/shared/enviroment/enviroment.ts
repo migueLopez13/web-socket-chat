@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 config();
 
 export const ENVIRONMENT = {
-  RMQ_URL: 'amqp://localhost:5672',
+  RMQ_URL: 'amqp://rabbitmq:5672',
 
   GATEWAY_PORT: Number(process.env.GATEWAY_PORT),
   MESSAGES_PORT: Number(process.env.MESSAGES_PORT),

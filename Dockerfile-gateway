@@ -1,0 +1,11 @@
+FROM node:16.15.0-alpine
+
+WORKDIR /gateway
+COPY ./back/api /gateway
+COPY ./.env /gateway/.env
+RUN npm i
+RUN chmod -R 777 node_modules
+
+EXPOSE 8000
+
+CMD [ "npm", "run", "start:dev" ]

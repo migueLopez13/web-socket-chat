@@ -1,0 +1,11 @@
+FROM node:18.4.0-alpine3.16
+
+WORKDIR /frontend
+
+COPY ./front /frontend
+COPY ./.env /frontend/.env
+
+RUN npm i
+RUN chmod -R 777 node_modules
+
+CMD [ "npm", "run", "dev" ]

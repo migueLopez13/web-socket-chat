@@ -4,6 +4,8 @@ import { Transport } from '@nestjs/microservices';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
 import { config } from 'dotenv';
+import { ENVIRONMENT } from './shared/enviroment/enviroment';
+import { QUEUES } from './shared/enviroment/queues';
 
 config()
 async function bootstrap() {
@@ -15,8 +17,8 @@ async function bootstrap() {
   app.connectMicroservice({
     transport: Transport.RMQ,
     options: {
-      urls: [process.env.RMQ_URL],
-      queue: process.env.GATEWAY,
+      urls: [ENVIRONMENT.RMQ_URL],
+      queue: QUEUES.GATEWAY,
       queueOptions: {
         durable: true,
       },
