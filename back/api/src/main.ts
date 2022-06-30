@@ -31,9 +31,9 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-  const port = 3000;
+  const port = 8000;
   await app.startAllMicroservices();
-  await app.listen(3000);
+  await app.listen(port);
 
   Logger.log(
     `**GATEWAY** Application is running on: http://localhost:${port}/${globalPrefix}`
